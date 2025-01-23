@@ -8,6 +8,20 @@
       "when": 1737535805263,
       "tag": "0000_closed_dagger",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1737597514422,
+      "tag": "0001_common_wong",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1737600098105,
+      "tag": "0002_ancient_dragon_lord",
+      "breakpoints": true
     }
   ]
 }
