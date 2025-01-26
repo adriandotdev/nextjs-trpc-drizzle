@@ -13,7 +13,7 @@ export const appRouter = createTRPCRouter({
 });
 
 export type Session = {
-  userId?: number;
+  userId: number;
 };
 
 // export type definition of API
