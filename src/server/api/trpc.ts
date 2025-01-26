@@ -6,11 +6,13 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
-import { initTRPC } from "@trpc/server";
+import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { db } from "@/server/db";
+import { type Session } from "./root";
+import * as jwt from "jsonwebtoken";
 
 /**
  * 1. CONTEXT
@@ -24,10 +26,15 @@ import { db } from "@/server/db";
  *
  * @see https://trpc.io/docs/server/context
  */
-export const createTRPCContext = async (opts: { headers: Headers }) => {
+export const createTRPCContext = async (opts: {
+  headers: Headers;
+  session: Session;
+}) => {
+  const session = opts.session || {};
   return {
     db,
-    ...opts,
+    session,
+    headers: opts.headers,
   };
 };
 
@@ -96,6 +103,42 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
   return result;
 });
 
+const authMiddleware = t.middleware(async ({ next, ctx }) => {
+  const header = ctx.headers.get("Authorization");
+
+  if (!header)
+    throw new TRPCError({
+      message: "Missing Authorization header",
+      code: "UNAUTHORIZED",
+    });
+
+  if (header && !header.startsWith("Bearer "))
+    throw new TRPCError({
+      message: "Invalid Authorization header",
+      code: "UNAUTHORIZED",
+    });
+
+  jwt.verify(
+    header.slice(7),
+    String(process.env.ACCESS_TOKEN_SECRET),
+    (err, decoded) => {
+      if (err)
+        throw new TRPCError({ message: "Invalid token", code: "UNAUTHORIZED" });
+
+      if (decoded) ctx.session.userId = decoded.user;
+
+      return decoded;
+    },
+  );
+
+  return next({
+    ctx: {
+      ...ctx,
+      session: { ...ctx.session },
+      // Add any additional context needed here, like user data, etc.
+    },
+  });
+});
 /**
  * Public (unauthenticated) procedure
  *
@@ -104,3 +147,5 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
  * are logged in.
  */
 export const publicProcedure = t.procedure.use(timingMiddleware);
+
+export const protectedProcedure = t.procedure.use(authMiddleware);

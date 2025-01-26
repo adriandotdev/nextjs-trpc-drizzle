@@ -22,6 +22,20 @@
       "when": 1737600098105,
       "tag": "0002_ancient_dragon_lord",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1737729672130,
+      "tag": "0003_new_maria_hill",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1737732438164,
+      "tag": "0004_green_sunspot",
+      "breakpoints": true
     }
   ]
 }
